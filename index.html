@@ -1,0 +1,137 @@
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Eat cells smaller than you and don't get eaten by the bigger ones, as an MMO">
+<meta name="keywords" content="agario, agar, io, cell, cells, virus, bacteria, blob, game, games, web game, html5, fun, flash">
+<meta name="robots" content="index, follow">
+<meta name="viewport" content="minimal-ui, width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Agar.io</title>
+<script type="text/javascript">
+//<![CDATA[
+//try{if (!window.CloudFlare) {var CloudFlare=[{verbose:0,p:1430760822,byc:0,owlid:"cf",bag2:1,mirage2:0,oracle:0,paths:{cloudflare:"/cdn-cgi/nexp/dok3v=1613a3a185/"},atok:"1debc3f60c3c92641d6a6ace408b7daa",petok:"04ffeae427ad05a127edc1865127d77aa20d5dcf-1431017972-1800",zone:"agar.io",rocket:"0",apps:{}}];CloudFlare.push({"apps":{"ape":"486786558c283a24ddfc0c4253eb2aee"}});!function(a,b){a=document.createElement("script"),b=document.getElementsByTagName("script")[0],a.async=!0,a.src="//ajax.cloudflare.com/cdn-cgi/nexp/dok3v=7e13c32551/cloudflare.min.js",b.parentNode.insertBefore(a,b)}()}}catch(e){};
+//]]>
+</script>
+<link href='http://fonts.googleapis.com/css?family=Ubuntu:700' rel='stylesheet' type='text/css'>
+<link href="css/bootstrap.min.css" rel="stylesheet">
+<style>body{padding:0;margin:0;overflow:hidden;}#canvas{position:absolute;left:0;right:0;top:0;bottom:0;width:100%;height:100%;}.checkbox label{margin-right:10px;}form{margin-bottom:0px;}.btn-play,.btn-settings,.btn-spectate{display:block;height:35px;}.btn-play{width:85%;float:left;}.btn-settings{width:13%;float:right;}.btn-spectate{display:block;float:right;}#adsBottom{position:absolute;left:0;right:0;bottom:0;z-index:2;}#adsBottomInner{margin:0px auto;width:728px;height:90px;border:5px solid white;border-radius:5px 5px 0px 0px;background-color:#FFFFFF;box-sizing:content-box;}.region-message{display:none;margin-bottom:12px;margin-left:6px;margin-right:6px;text-align:center;}@media screen and (max-height: 800px) {#adsBottom{display:none;}}</style>
+</head>
+<body>
+<div id="overlays" style="position: absolute; left: 0; right: 0; top: 0; bottom: 0; background-color: rgba(0,0,0,0.5); z-index: 2;">
+<div id="helloDialog" style="width: 350px; background-color: #FFFFFF; margin: 100px auto; border-radius: 15px; padding: 5px 15px 5px 15px;">
+<form role="form">
+<div class="form-group">
+<h2><center>Hello</center></h2>
+</div>
+<div class="form-group">
+<p>Type your nick or leave it empty:</p>
+<input id="nick" class="form-control" placeholder="Nick" maxlength="14" value=""/>
+</div>
+<div class="form-group">
+<select id="region" class="form-control" onchange="setRegion($('#region').val());$('.region-message').hide();$('.region-message.'+$('#region').val()).show();$('.btn-needs-server').prop('disabled', false);" required>
+<option selected disabled value=""> -- Select a Region -- </option>
+<option value="US-Fremont">US West</option>
+<option value="US-Atlanta">US East</option>
+<option value="BR-Brazil">South America</option>
+<option value="EU-London">Europe</option>
+<option value="RU-Russia">Russia</option>
+<option value="JP-Tokyo">East Asia</option>
+<option value="CN-China">China</option>
+<option value="SG-Singapore">Oceania</option>
+</select>
+</div>
+<div>
+<div class="text-muted region-message CN-China">
+ 
+</div>
+</div>
+<div class="form-group">
+<button disabled type="submit" id="playBtn" onclick="setNick(document.getElementById('nick').value); return false;" class="btn btn-play btn-primary btn-needs-server">Play</button>
+<button onclick="$('#settings').toggle(); return false;" class="btn btn-info btn-settings"><i class="glyphicon glyphicon-cog"></i></button>
+<br clear="both"/>
+</div>
+<div id="settings" class="checkbox" style="xdisplay:none;">
+ 
+<center>
+    <label><input type="checkbox" onchange="setSkins(!$(this).is(':checked'));"> No skins</label>
+    <label><input type="checkbox" onchange="setNames(!$(this).is(':checked'));"> No names</label>
+    <label><input type="checkbox" onchange="setDarkTheme($(this).is(':checked'));"> Dark Theme</label>
+    <label><input type="checkbox" onchange="setColors($(this).is(':checked'));"> No colors</label>
+    <label><input type="checkbox" checked onchange="setShowMass($(this).is(':checked'));"> Show mass</label>
+    <label><input type="checkbox" checked onchange="setRadar($(this).is(':checked'));"> Radar</label>
+</center>
+</div>
+</form>
+<hr/>
+<center><span class="text-muted">
+Move your mouse to control your cell.<br/>
+Press <b>Space</b> to split.<br/>
+Press <b>W</b> to eject some mass<br/>
+</span></center>
+<center><span class="text-muted">
+    Use this version for reference only.<br>
+    Send the pull-request to <a href="">guthub</a>
+</span></center>
+<hr/>
+<ins class="adsbygoogle" style="display:inline-block;width:320px;height:100px;" data-ad-client="ca-pub-0744044009464246" data-ad-slot="3014962502"></ins>
+<img id="blocker" width="320" height="100" src="blocker.png" style="display:none;border-radius:5px;"/>
+<hr style="margin-bottom: 7px; "/>
+<div style="margin-bottom: 5px; float: left; line-height: 32px; margin-left: 6px; height: 32px;">
+<a href="privacy.txt" class="text-muted">Privacy Policy</a>
+|
+<a href="changelog.txt" class="text-muted">Changelog</a>
+</div>
+<div class="a2a_kit a2a_kit_size_32 a2a_default_style" style="float:right;">
+<a class="a2a_dd" href="https://www.addtoany.com/share_save?linkurl=http%3A%2F%agar.io&amp;linkname=Agar.io"></a>
+<a class="a2a_button_facebook"></a>
+<a class="a2a_button_twitter"></a>
+</div>
+<script type="text/javascript">
+			var a2a_config = a2a_config || {};
+			a2a_config.linkname = "Agar.io";
+			a2a_config.linkurl = "http://agar.io";
+			a2a_config.onclick = 1;
+			a2a_config.num_services = 6;
+		</script>
+<script type="text/javascript" src="http://static.addtoany.com/menu/page.js"></script>
+<br clear="both"/>
+</div>
+</div>
+<div id="connecting" style="display:none;position: absolute; left: 0; right: 0; top: 0; bottom: 0; z-index: 1; background-color: rgba(0,0,0,0.5);">
+<div style="width: 350px; background-color: #FFFFFF; margin: 100px auto; border-radius: 15px; padding: 5px 15px 5px 15px;">
+<h2>Connecting</h2>
+<p> If you cannot connect to the servers, check if you have some anti virus or firewall blocking the connection.
+</div>
+</div>
+<div id="adsBottom">
+</div>
+<canvas id="canvas" width="800" height="600"></canvas>
+
+
+<div style="font-family:'Ubuntu'">&nbsp;</div>
+<script src="js/jquery.js"></script>
+<script src="quadtree.js"></script>
+<script src="main_out.js"></script>
+
+<script>
+    $(function(){
+       // connect('ws://109.237.27.27:443');
+       // $('#overlays').hide();
+    });
+</script>
+
+<script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-62796629-1', 'auto');
+    ga('send', 'pageview');
+
+</script>
+
+</body>
+</html>
