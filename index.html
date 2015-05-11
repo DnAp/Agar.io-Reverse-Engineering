@@ -55,12 +55,15 @@
 <div id="settings" class="checkbox" style="xdisplay:none;">
  
 <center>
+    <button onclick="spectate(); return false;" disabled class="btn btn-warning btn-spectate btn-needs-server">Spectate</button>
     <label><input type="checkbox" onchange="setSkins(!$(this).is(':checked'));"> No skins</label>
     <label><input type="checkbox" onchange="setNames(!$(this).is(':checked'));"> No names</label>
     <label><input type="checkbox" onchange="setDarkTheme($(this).is(':checked'));"> Dark Theme</label>
     <label><input type="checkbox" onchange="setColors($(this).is(':checked'));"> No colors</label>
     <label><input type="checkbox" checked onchange="setShowMass($(this).is(':checked'));"> Show mass</label>
     <label><input type="checkbox" checked onchange="setRadar($(this).is(':checked'));"> Radar</label>
+    <label><input type="checkbox" checked onchange="setTypesHack($(this).is(':checked'));"> Enemy Types Hack</label>
+    <label><input type="checkbox" checked onchange="setScreenHack($(this).is(':checked'));"> Screen Hack</label>
 </center>
 </div>
 </form>
