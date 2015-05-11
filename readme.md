@@ -18,5 +18,9 @@ Agar.io Reverse Engineering
  * Red - predator
 
 ### To start ###
-Copy files to your server and open their as http://localhost/ or http://agar.io/
 
+#### With php ####
+Copy files to your server and open index.html
+
+#### Without php ####
+Copy files to your server and open their as http://localhost/ or http://agar.io/

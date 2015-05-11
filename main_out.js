@@ -53,7 +53,7 @@
             }
 
             if (!(27 != e.keyCode)) { // esc
-                jQuery("#overlays").fadeIn(200)
+                jQuery("#overlays").toggle(200);
             }
         };
         window_.onkeyup = function(event) {
@@ -115,6 +115,11 @@
         }
     }
 
+    function getProxyUrl()
+    {
+        return document.location.href.replace(/\/(index\.html|)$/, "")+"/proxy.php";
+    }
+
     function render() {
         if (null == old) {
             old = {};
@@ -126,7 +131,14 @@
                 }
             });
         }
-        jQuery.get("http://m.agar.io/info", function(b) {
+        var url;
+        if(document.location.host == 'localhost' || document.location.host=='agar.io'){
+            url = 'http://m.agar.io/info';
+        }else{
+            url = document.location.href
+            url = getProxyUrl()+'?info=1';
+        }
+        jQuery.get(url, function(b) {
             var name;
             for (name in b.regions) {
                 jQuery('#region option[value="' + name + '"]').text(old[name] + " (" + b.regions[name].numPlayers + " players)");
@@ -142,7 +154,13 @@
         }
     }
     function next() {
-        jQuery.ajax("http://m.agar.io/", {
+        var url;
+        if(document.location.host == 'localhost' || document.location.host=='agar.io'){
+            url = 'http://m.agar.io/';
+        }else{
+            url = getProxyUrl();
+        }
+        jQuery.ajax(url, {
             error : function() {
                 setTimeout(next, 1E3);
             },
