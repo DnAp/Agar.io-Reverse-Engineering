@@ -51,6 +51,10 @@
                     keyW = true;
                 }
             }
+
+            if (!(27 != e.keyCode)) { // esc
+                jQuery("#overlays").fadeIn(200)
+            }
         };
         window_.onkeyup = function(event) {
             if (32 == event.keyCode) { // space
@@ -213,6 +217,11 @@
         switch(d.getUint8(0)) {
             case 16:
                 run(d);
+                break;
+            case 17:
+                px = d.getFloat64(1, true);
+                py = d.getFloat64(9, true);
+                ratio = d.getFloat64(17, true);
                 break;
             case 20:
                 myPoints = [];
@@ -506,7 +515,7 @@
                 }
             }
             score = Math.pow(Math.min(64 / score, 1), 0.4) * Math.max(height / 965, width / 1920);
-            ratio = (9 * ratio + score) / 10.35 ;
+            ratio = (9 * ratio + score) / screenRenderSize ;
         }
     }
     function draw() {
@@ -722,11 +731,13 @@
         var right = 1E4;
         var top = 1E4;
         var ratio = 1;
+        var screenRenderSize = 10;
         var dest = null;
         var showSkins = true;
         var nickName = true;
         var isColors = false;
         var isRadar = true;
+        var isTypesHack = true;
         var aa = false;
         var closingAnimationTime = 0;
         var darkTheme = false;
@@ -758,8 +769,23 @@
         window_.setRadar = function(data) {
             isRadar = data;
         };
+        window_.setTypesHack = function(data) {
+            isTypesHack = data;
+        };
+        window_.setScreenHack = function(data) {
+            if ( data ) {
+                screenRenderSize = 10.35;
+            } else {
+                screenRenderSize = 10;
+            }
+        };
         window_.setShowMass = function(val) {
             isShowMass = val;
+        };
+        window_.spectate = function () {
+            emit(1);
+            jQuery("#adsBottom").hide();
+            jQuery("#overlays").hide();
         };
         window_.connect = open;
         var val = -1;
@@ -972,7 +998,7 @@
                     } else {
                         if(myPoints.indexOf(this) != -1){
                             this.color = '#E2FF07';
-                        }else if(isRadar && !this.isVirus){
+                        }else if(isTypesHack && !this.isVirus){
                             if (this.size < minMass * 0.9 / 2) {
                                 this.color = '#57FF07';
                             } else if (this.size < minMass * 0.9) {
