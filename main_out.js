@@ -160,6 +160,7 @@
         }else{
             url = getProxyUrl();
         }
+        console.log("Find " + dest + gameMode);
         jQuery.ajax(url, {
             error : function() {
                 setTimeout(next, 1E3);
@@ -172,7 +173,7 @@
             method : "POST",
             cache : false,
             crossDomain : true,
-            data : dest || "?"
+            data : dest + gameMode || "?"
         });
     }
     function after() {
@@ -315,102 +316,44 @@
             if (0 == id) {
                 break;
             }
-            pointX = d.getFloat64(offset, true);
-            offset = offset + 8;
-            pointY = d.getFloat64(offset, true);
-            offset = offset + 8;
-            pointSize = d.getFloat64(offset, true);
-            offset = offset + 8;
+            pointX = d.getFloat32(offset, true);
+            offset = offset + 4;
+            pointY = d.getFloat32(offset, true);
+            offset = offset + 4;
+            pointSize = d.getFloat32(offset, true);
+            offset = offset + 4;
             var pointColor = d.getUint8(offset);
             offset++;
-            var pointIsVirus = false;
-            if (0 == pointColor) {
-                pointIsVirus = true;
-                pointColor = "#33FF33";
-            } else {
-                if (255 == pointColor) {
-                    pointIsVirus = d.getUint8(offset);
-                    offset++;
-                    pointColor = d.getUint8(offset);
-                    offset++;
-                    var pointName = d.getUint8(offset);
-                    offset++;
-                    pointColor = isArray(pointIsVirus << 16 | pointColor << 8 | pointName);
-                    pointName = d.getUint8(offset++);
-                    pointIsVirus = !!(pointName & 1);
-                    if (pointName & 2) {
-                        offset += 4;
-                    }
-                    if (pointName & 4) {
-                        offset += 8;
-                    }
-                    if (pointName & 8) {
-                        offset += 16;
-                    }
-                } else {
-                    pointColor = 63487 | pointColor << 16;
-                    var data = (pointColor >> 16 & 255) / 255 * 360;
-                    var params = (pointColor >> 8 & 255) / 255;
-                    pointColor = (pointColor >> 0 & 255) / 255;
-                    if (0 == params) {
-                        pointColor = pointColor << 16 | pointColor << 8 | pointColor << 0;
-                    } else {
-                        data = data / 60;
-                        pointName = ~~data;
-                        var callback = data - pointName;
-                        data = pointColor * (1 - params);
-                        var tmp = pointColor * (1 - params * callback);
-                        params = pointColor * (1 - params * (1 - callback));
-                        var fn = callback = 0;
-                        var result = 0;
-                        switch(pointName % 6) {
-                            case 0:
-                                callback = pointColor;
-                                fn = params;
-                                result = data;
-                                break;
-                            case 1:
-                                callback = tmp;
-                                fn = pointColor;
-                                result = data;
-                                break;
-                            case 2:
-                                callback = data;
-                                fn = pointColor;
-                                result = params;
-                                break;
-                            case 3:
-                                callback = data;
-                                fn = tmp;
-                                result = pointColor;
-                                break;
-                            case 4:
-                                callback = params;
-                                fn = data;
-                                result = pointColor;
-                                break;
-                            case 5:
-                                callback = pointColor;
-                                fn = data;
-                                result = tmp;
-                        }
-                        callback = ~~(255 * callback) & 255;
-                        fn = ~~(255 * fn) & 255;
-                        result = ~~(255 * result) & 255;
-                        pointColor = callback << 16 | fn << 8 | result;
-                    }
-                    pointColor = isArray(pointColor);
-                }
+            var pointIsVirus = d.getUint8(offset++);
+            var pointName = d.getUint8(offset++);
+
+            pointColor = (pointColor << 16 | pointIsVirus << 8 | pointName).toString(16);
+            for (;6 > pointColor.length;) {
+                pointColor = "0" + pointColor;
+            }
+            pointColor = "#" + pointColor;
+            pointName = d.getUint8(offset++);
+            pointIsVirus = !!(pointName & 1);
+            if (pointName & 2) {
+                offset += 4;
+            }
+            if (pointName & 4) {
+                offset += 8;
+            }
+            if (pointName & 8) {
+                offset += 16;
             }
             pointName = "";
-            while(true) {
-                data = d.getUint16(offset, true);
-                offset += 2;
+            while(true){
+                var data = d.getUint16(offset, true);
+                offset = offset + 2;
                 if (0 == data) {
                     break;
                 }
                 pointName += String.fromCharCode(data);
             }
+            data = null;
+
             data = null;
             if (nodes.hasOwnProperty(id)) {
                 data = nodes[id];
@@ -755,7 +698,7 @@
         var nickName = true;
         var isColors = false;
         var isRadar = true;
-        var isTypesHack = true;
+        var isTypesHack = false;
         var aa = false;
         var closingAnimationTime = 0;
         var darkTheme = false;
@@ -764,6 +707,7 @@
         var copy = new Image;
         copy.src = "img/split.png";
         var old = null;
+        var gameMode = "";
         window_.setNick = function(subKey) {
             jQuery("#adsBottom").hide();
             result = subKey;
@@ -804,6 +748,14 @@
             emit(1);
             jQuery("#adsBottom").hide();
             jQuery("#overlays").hide();
+        };
+
+        window_.setGameMode = function(val) {
+            if (val != gameMode) {
+                /** @type {number} */
+                gameMode = val;
+                after();
+            }
         };
         window_.connect = open;
         var val = -1;
@@ -1046,7 +998,7 @@
 
                     ctx.closePath();
                     key = this.name.toLowerCase();
-                    if (showSkins) {
+                    if (showSkins && gameMode == "") {
                         if (-1 != excludes.indexOf(key)) {
                             if (!sources.hasOwnProperty(key)) {
                                 sources[key] = new Image;
