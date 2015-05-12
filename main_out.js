@@ -212,7 +212,7 @@
         view.setUint8(0, 255);
         view.setUint32(1, 1, true);
         ws.send(data);
-        close();
+        sendNickname();
     }
     function report(failing_message) {
         console.log("socket close");
@@ -434,7 +434,7 @@
             }
         }
     }
-    function close() {
+    function sendNickname() {
         if (ws != null && (ws.readyState == ws.OPEN && result != null)) {
             var buf = new ArrayBuffer(1 + 2 * result.length);
             var view = new DataView(buf);
@@ -711,7 +711,7 @@
         window_.setNick = function(subKey) {
             jQuery("#adsBottom").hide();
             result = subKey;
-            close();
+            sendNickname();
             jQuery("#overlays").hide();
             closingAnimationTime = 0;
         };
