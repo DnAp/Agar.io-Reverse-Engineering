@@ -989,13 +989,13 @@ jQuery('#playBtn').click(function() {
                     } else {
                         if(myPoints.indexOf(this) != -1){
                             this.color = '#E2FF07';
-                        }else if(isTypesHack && !this.isVirus){
-                            if (this.size < minMass * 0.9 / 2) {
+                        }else if(isTypesHack && !this.isVirus && this.size > 14){
+                            if (this.size * 0.9 > minMass) {
+                                this.color = '#FF3107';
+                            } else if (this.size < (minMass / 1.414213562) * 0.9) {
                                 this.color = '#57FF07';
                             } else if (this.size < minMass * 0.9) {
                                 this.color = '#07FFB0';
-                            } else if (this.size * 0.9 > minMass) {
-                                this.color = '#FF3107';
                             } else {
                                 this.color = '#4106FF';
                             }
