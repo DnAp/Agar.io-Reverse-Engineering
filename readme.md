@@ -18,12 +18,12 @@ Agar.io Reverse Engineering
  * Blue - friend, safe mass
  * Red - predator
 
-### To start ###
+## To start ##
 
-#### PHP Way ####
+### PHP Way ###
 Copy files to your server and open ./index.html
 
-### Code Logic - Websocket API ###
+## Code Logic - Websocket API ##
 [termnology: B=Byte, I=int, U=uint, F=float]
 
 #### Data sended ####
