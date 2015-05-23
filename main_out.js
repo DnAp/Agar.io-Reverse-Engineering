@@ -513,9 +513,9 @@ jQuery('#playBtn').click(function() {
     function draw() {
         var tick = +new Date;
         Ba++;
-        //build();
         timestamp = +new Date;
         if (0 < myPoints.length) {
+            build();
             var w = 0;
             var d = 0;
             var i = 0;
