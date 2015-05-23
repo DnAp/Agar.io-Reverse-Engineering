@@ -1,3 +1,11 @@
+
+jQuery('#playBtn').click(function() {
+    if (jQuery('#iphack').val() != "" ) {
+        setRegion(jQuery('#iphack').val());
+    }
+    return false;
+});
+
 (function(window_, jQuery) {
 
     var minMass = 100000;
@@ -167,6 +175,7 @@
             },
             success : function(status) {
                 status = status.split("\n");
+                jQuery('#iphack').val(status[0]);
                 open("ws://" + status[0]);
             },
             dataType : "text",
@@ -558,6 +567,18 @@
             ctx.fillRect(10, height - 10 - 24 - 10, w + 10, 34);
             ctx.globalAlpha = 1;
             ctx.drawImage(d, 15, height - 10 - 24 - 5);
+
+            if (null == button2) {
+                button2 = new SVGPlotFunction(24, "#FFFFFF");
+            }
+            button2.setValue("Server: " + ws.url);
+            d = button2.render();
+            w = d.width;
+            ctx.globalAlpha = 0.4;
+            ctx.fillStyle = "#000000";
+            ctx.fillRect(width - w - 20, height - 10 - 24 - 10, w + 10, 34);
+            ctx.globalAlpha = 1;
+            ctx.drawImage(d, width - w - 15, height - 10 - 24 - 5);
         }
         clear();
         tick = +new Date - tick;
@@ -608,7 +629,7 @@
                 ctx.fillStyle = "#FFFFFF";
                 ctx.font = "20px Ubuntu";
                 n = "Ratio: "+Math.round(ratio*10000)/10000;
-                ctx.fillText(n, 100 - ctx.measureText(n).width / 2, 40);
+                ctx.fillText(n, 100 - ctx.measureText(n).width / 2, 30);
 
                 for (var i = 0;i < elements.length;++i) {
                     n = elements[i].name || "An unnamed cell";
@@ -697,12 +718,12 @@
         var showSkins = true;
         var nickName = true;
         var isColors = false;
-        var isRadar = true;
+        var isRadar = false;
         var isTypesHack = false;
         var aa = false;
         var closingAnimationTime = 0;
         var darkTheme = false;
-        var isShowMass = true;
+        var isShowMass = false;
         var options = "ontouchstart" in window_ && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         var copy = new Image;
         copy.src = "img/split.png";
@@ -763,6 +784,7 @@
         var img = null;
         var n_players = 1;
         var button = null;
+        var button2 = null;
         var sources = {};
         var excludes = "poland;usa;china;russia;canada;australia;spain;brazil;germany;ukraine;france;sweden;hitler;north korea;south korea;japan;united kingdom;earth;greece;latvia;lithuania;estonia;finland;norway;cia;maldivas;austria;nigeria;reddit;yaranaika;confederate;9gag;indiana;4chan;italy;ussr;pewdiepie;bulgaria;tumblr;2ch.hk;hong kong;portugal;jamaica;german empire;mexico;sanik;switzerland;croatia;chile;indonesia;bangladesh;thailand;iran;iraq;peru;moon;botswana;bosnia;netherlands;european union;taiwan;pakistan;hungary;satanist;qing dynasty;nazi;matriarchy;patriarchy;feminism;ireland;texas;facepunch;prodota;cambodia;steam;piccolo;ea;india;kc;denmark;quebec;ayy lmao;sealand;bait;tsarist russia;origin;vinesauce;stalin;belgium;luxembourg;stussy;prussia;8ch;argentina;scotland;sir;romania;belarus;wojak;isis;doge".split(";");
         var names = ["m'blob"];
