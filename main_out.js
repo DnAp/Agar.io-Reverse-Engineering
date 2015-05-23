@@ -140,12 +140,12 @@ jQuery('#playBtn').click(function() {
             });
         }
         var url;
-        //if(document.location.host == 'localhost' || document.location.host=='agar.io'){
+        if(document.location.host == 'localhost' || document.location.host=='agar.io'){
             url = 'http://m.agar.io/info';
-       /* }else{
+        }else{
             url = document.location.href
             url = getProxyUrl()+'?info=1';
-        }*/
+        }
         jQuery.get(url, function(b) {
             var name;
             for (name in b.regions) {
@@ -163,11 +163,11 @@ jQuery('#playBtn').click(function() {
     }
     function next() {
         var url;
-        //if(document.location.host == 'localhost' || document.location.host=='agar.io'){
+        if(document.location.host == 'localhost' || document.location.host=='agar.io'){
             url = 'http://m.agar.io/';
-        /*}else{
+        }else{
             url = getProxyUrl();
-        }*/
+        }
         console.log("Find " + dest + gameMode);
         jQuery.ajax(url, {
             error : function() {
