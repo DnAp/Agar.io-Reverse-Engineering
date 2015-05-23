@@ -19,9 +19,7 @@ Agar.io Reverse Engineering
  * Red - predator
 
 ## To start ##
-
-### PHP Way ###
-Copy files to your server and open ./index.html
+Copy files to your server and open http://localhost/index.html
 
 ## Code Logic - Websocket API ##
 [termnology: B=Byte, I=int, U=uint, F=float]
