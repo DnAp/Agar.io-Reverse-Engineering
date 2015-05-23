@@ -331,18 +331,17 @@ jQuery('#playBtn').click(function() {
             offset = offset + 4;
             pointSize = d.getFloat32(offset, true);
             offset = offset + 4;
-            var pointColor = d.getUint8(offset);
+            var colorR = d.getUint8(offset);
             offset++;
-            var pointIsVirus = d.getUint8(offset++);
-            var pointName = d.getUint8(offset++);
-
-            pointColor = (pointColor << 16 | pointIsVirus << 8 | pointName).toString(16);
+            var colorG = d.getUint8(offset++);
+            var colorB = d.getUint8(offset++);
+            var pointColor = (colorR << 16 | colorG << 8 | colorB).toString(16);
             for (;6 > pointColor.length;) {
                 pointColor = "0" + pointColor;
             }
             pointColor = "#" + pointColor;
-            pointName = d.getUint8(offset++);
-            pointIsVirus = !!(pointName & 1);
+            var pointName = d.getUint8(offset++);
+            var pointIsVirus = !!(pointName & 1);
             if (pointName & 2) {
                 offset += 4;
             }
