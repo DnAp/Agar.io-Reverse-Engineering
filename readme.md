@@ -3,6 +3,7 @@ Agar.io Reverse Engineering
 
 **Author:**
  * DnAp
+ * TheZero
 
 ## Feature ##
  * Reverse engineering main_out.js with user frendly variables names
@@ -17,29 +18,26 @@ Agar.io Reverse Engineering
  * Blue - friend, safe mass
  * Red - predator
 
-### To start ###
+## To start ##
+Copy files to your server and open http://localhost/index.html
 
-#### Without php ####
-Copy files to your server and open their as http://localhost/ or http://agar.io/
-
-#### code logic ####
-Websocket API
-### send data format ###
+## Code Logic - Websocket API ##
 [termnology: B=Byte, I=int, U=uint, F=float]
-send these commands to server
- * send 5 bytes(1st byte=255, 4 bytes=1) when opened connection
- * send name: 0(1byte) + characters ascii(16 byte each, to support other languages)
- * send actions: 1 byte number(command)
-	- 1 : spectate
- 	- 17: space key(split)
-	- 18: Q key
-	- 19: Q keyup, close game
-	- 21: W key(eject mass)
- * send normalized location: 21 bytes
-	- 16(1BI)+xPos(8BF)+yPos(8BF)+0(4BI)
 
-### receive data format ###
-received in data buffer with first byte is command, as follows
+#### Data sended ####
+
+ * send 5B (1B=255 + 4B=1) when opened connection
+ * send name: 0(1B) + characters ascii(16B each, to support other languages)
+ * send actions: 1B number(command)
+	- 1 : spectate
+ 	- 17: space key (split)
+	- 18: Q key _(apparently don't work)_
+	- 19: Q keyup, close game _(apparently don't work)_
+	- 21: W key (eject mass)
+ * send normalized location: 21B
+	- 16(1BI) + xPos(8BF) + yPos(8BF) + 0(4BI)
+
+#### Data Received ####
  * 16: main loop which called very often with updated locations of everyone. following data format.
 	- 2BU: number points to destroy. probably first eating second.
 	- info of above points: id of first(4BU) + id of 2nd(4BU)
@@ -59,11 +57,3 @@ received in data buffer with first byte is command, as follows
 	- name and ids list sorted by rank (top 10)
  * 64: size of canvas
 	- comes when select region. fixed for all regions
-
-###tasks to do on server###
- 1. generate user at random location
- 2. generate seeds at random location
- 3. split into multiple parts if collides with splitter.
- 4. handle commands to split, eject
- 5. logic to eat others given some constraints.
- 6. if user have several parts, keep them together.
