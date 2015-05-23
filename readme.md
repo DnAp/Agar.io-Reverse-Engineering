@@ -3,6 +3,7 @@ Agar.io Reverse Engineering
 
 **Author:**
  * DnAp
+ * TheZero
 
 ## Feature ##
  * Reverse engineering main_out.js with user frendly variables names
@@ -38,7 +39,7 @@ Copy files to your server and open ./index.html
  * send normalized location: 21B
 	- 16(1BI) + xPos(8BF) + yPos(8BF) + 0(4BI)
 
-### Data Received ####
+#### Data Received ####
  * 16: main loop which called very often with updated locations of everyone. following data format.
 	- 2BU: number points to destroy. probably first eating second.
 	- info of above points: id of first(4BU) + id of 2nd(4BU)
