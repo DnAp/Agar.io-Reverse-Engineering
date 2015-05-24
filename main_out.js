@@ -211,6 +211,8 @@ jQuery('#playBtn').click(function() {
         items = [];
         sprites = [];
         elements = [];
+        img = angles = null;
+        closingAnimationTime = 0;
         console.log("Connecting to " + url);
         ws = new WebSocket(url);
         ws.binaryType = "arraybuffer";
@@ -250,6 +252,7 @@ jQuery('#playBtn').click(function() {
         }
         var i = 1;
         var data = new DataView(target.data);
+        var seek;
         switch(data.getUint8(0)) {
             case 16:
                 run(data);
@@ -266,16 +269,6 @@ jQuery('#playBtn').click(function() {
             case 32:
                 bucket.push(data.getUint32(1, true));
                 break;
-            /*case 48:
-                elements = [];
-                while(i < data.byteLength) {
-                    elements.push({
-                        id : 0,
-                        name : encode()
-                    });
-                }
-                redraw();
-                break;*/
             case 49:
                 if (null != angles) {
                     break;
@@ -283,7 +276,7 @@ jQuery('#playBtn').click(function() {
                 target = data.getUint32(i, true);
                 i += 4;
                 elements = [];
-                var seek = 0;
+                seek = 0;
                 for (;seek < target;++seek) {
                     var r = data.getUint32(i, true);
                     i = i + 4;
@@ -298,12 +291,12 @@ jQuery('#playBtn').click(function() {
                 angles = [];
                 target = data.getUint32(i, true);
                 i += 4;
-                a = 0;
-                for (;a < target;++a) {
+                seek = 0;
+                for (;seek < target;++seek) {
                     angles.push(data.getFloat32(i, true));
                     i += 4;
                 }
-                render();
+                redraw();
                 break;
             case 64:
                 left = data.getFloat64(1, true);
@@ -446,8 +439,13 @@ jQuery('#playBtn').click(function() {
         mouseX2 = (mouseX - width / 2) / ratio + px;
         mouseY2 = (mouseY - height / 2) / ratio + py;
     }
+
+    function isConnect() {
+        return ws != null && ws.readyState == ws.OPEN;
+    }
+
     function f() {
-        if (ws != null && ws.readyState == ws.OPEN) {
+        if (isConnect()) {
             var z0 = mouseX - width / 2;
             var z1 = mouseY - height / 2;
 
@@ -470,7 +468,7 @@ jQuery('#playBtn').click(function() {
         }
     }
     function sendNickname() {
-        if (ws != null && (ws.readyState == ws.OPEN && result != null)) {
+        if (isConnect() && result != null) {
             var buf = new ArrayBuffer(1 + 2 * result.length);
             var view = new DataView(buf);
             view.setUint8(0, 0);
@@ -583,9 +581,7 @@ jQuery('#playBtn').click(function() {
 
         ctx.restore();
         if (img) {
-            if (0 != elements.length) {
-                ctx.drawImage(img, width - img.width - 10, 10);
-            }
+            ctx.drawImage(img, width - img.width - 10, 10);
         }
         closingAnimationTime = Math.max(closingAnimationTime, getHeight());
         if (0 != closingAnimationTime) {
@@ -645,7 +641,6 @@ jQuery('#playBtn').click(function() {
     }
     function redraw() {
         img = null;
-        img = null;
         if (null != angles || 0 != elements.length) {
             if (null != angles || nickName) {
                 img = document.createElement("canvas");
@@ -687,7 +682,7 @@ jQuery('#playBtn').click(function() {
                     i = n = 0;
                     for (;i < angles.length;++i) {
                         var angEnd = n + angles[i] * Math.PI * 2;
-                        ctx.fillStyle = cs[i + 1];
+                        ctx.fillStyle = css[i + 1];
                         ctx.beginPath();
                         ctx.moveTo(100, 140);
                         ctx.arc(100, 140, 80, n, angEnd, false);
@@ -778,7 +773,7 @@ jQuery('#playBtn').click(function() {
         var isShowMass = false;
         var options = "ontouchstart" in window_ && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         var copy = new Image;
-        copy.src = "img/split.png";
+        copy.src = "http://agar.io/img/split.png";
         var old = null;
         var gameMode = "";
         window_.setNick = function(subKey) {
