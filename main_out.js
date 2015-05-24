@@ -93,31 +93,35 @@ jQuery('#playBtn').click(function() {
         setRegion(jQuery("#region").val());
     }
     function processData() {
-        var minX = Number.POSITIVE_INFINITY;
-        var minY = Number.POSITIVE_INFINITY;
-        var maxX = Number.NEGATIVE_INFINITY;
-        var maxY = Number.NEGATIVE_INFINITY;
-        var newDuration = 0;
-        var i = 0;
-        for (;i < items.length;i++) {
-            newDuration = Math.max(items[i].size, newDuration);
-            minX = Math.min(items[i].x, minX);
-            minY = Math.min(items[i].y, minY);
-            maxX = Math.max(items[i].x, maxX);
-            maxY = Math.max(items[i].y, maxY);
-        }
-        context = QUAD.init({
-            minX : minX - (newDuration + 100),
-            minY : minY - (newDuration + 100),
-            maxX : maxX + (newDuration + 100),
-            maxY : maxY + (newDuration + 100)
-        });
+        if (0.5 > ratio) {
+            body = null;
+        } else {
+            var minX = Number.POSITIVE_INFINITY;
+            var minY = Number.POSITIVE_INFINITY;
+            var maxX = Number.NEGATIVE_INFINITY;
+            var maxY = Number.NEGATIVE_INFINITY;
+            var newDuration = 0;
+            var i = 0;
+            for (; i < items.length; i++) {
+                newDuration = Math.max(items[i].size, newDuration);
+                minX = Math.min(items[i].x, minX);
+                minY = Math.min(items[i].y, minY);
+                maxX = Math.max(items[i].x, maxX);
+                maxY = Math.max(items[i].y, maxY);
+            }
+            context = QUAD.init({
+                minX: minX - (newDuration + 100),
+                minY: minY - (newDuration + 100),
+                maxX: maxX + (newDuration + 100),
+                maxY: maxY + (newDuration + 100)
+            });
 
-        for (i = 0;i < items.length;i++) {
-            if (minX = items[i], minX.shouldRender()) {
-                minY = 0;
-                for (;minY < minX.points.length;++minY) {
-                    context.insert(minX.points[minY]);
+            for (i = 0; i < items.length; i++) {
+                if (minX = items[i], minX.shouldRender()) {
+                    minY = 0;
+                    for (; minY < minX.points.length; ++minY) {
+                        context.insert(minX.points[minY]);
+                    }
                 }
             }
         }
@@ -186,15 +190,19 @@ jQuery('#playBtn').click(function() {
         });
     }
     function after() {
-        jQuery("#connecting").show();
-        next();
+        if(dest) {
+            jQuery("#connecting").show();
+            next();
+        }
     }
     function open(url) {
         if (ws) {
             ws.onopen = null;
             ws.onmessage = null;
             ws.onclose = null;
-            ws.close();
+            try {
+                ws.close();
+            }catch (e) {}
             ws = null;
         }
         bucket = [];
@@ -231,7 +239,7 @@ jQuery('#playBtn').click(function() {
         function encode() {
             var utftext = "";
             while(true) {
-                var c = d.getUint16(i, true);
+                var c = data.getUint16(i, true);
                 i += 2;
                 if (0 == c) {
                     break;
@@ -241,40 +249,43 @@ jQuery('#playBtn').click(function() {
             return utftext;
         }
         var i = 1;
-        var d = new DataView(target.data);
-        switch(d.getUint8(0)) {
+        var data = new DataView(target.data);
+        switch(data.getUint8(0)) {
             case 16:
-                run(d);
+                run(data);
                 break;
             case 17:
-                px = d.getFloat64(1, true);
-                py = d.getFloat64(9, true);
-                ratio = d.getFloat64(17, true);
+                px = data.getFloat32(1, true);
+                py = data.getFloat32(5, true);
+                ratio1 = data.getFloat32(9, true);
                 break;
             case 20:
                 myPoints = [];
                 bucket = [];
                 break;
             case 32:
-                bucket.push(d.getUint32(1, true));
+                bucket.push(data.getUint32(1, true));
                 break;
-            case 48:
+            /*case 48:
                 elements = [];
-                while(i < d.byteLength) {
+                while(i < data.byteLength) {
                     elements.push({
                         id : 0,
                         name : encode()
                     });
                 }
                 redraw();
-                break;
+                break;*/
             case 49:
-                target = d.getUint32(i, true);
+                if (null != angles) {
+                    break;
+                }
+                target = data.getUint32(i, true);
                 i += 4;
                 elements = [];
                 var seek = 0;
                 for (;seek < target;++seek) {
-                    var r = d.getUint32(i, true);
+                    var r = data.getUint32(i, true);
                     i = i + 4;
                     elements.push({
                         id : r,
@@ -283,14 +294,29 @@ jQuery('#playBtn').click(function() {
                 }
                 redraw();
                 break;
+            case 50:
+                angles = [];
+                target = data.getUint32(i, true);
+                i += 4;
+                a = 0;
+                for (;a < target;++a) {
+                    angles.push(data.getFloat32(i, true));
+                    i += 4;
+                }
+                render();
+                break;
             case 64:
-                left = d.getFloat64(1, true);
-                bottom = d.getFloat64(9, true);
-                right = d.getFloat64(17, true);
-                top = d.getFloat64(25, true);
+                left = data.getFloat64(1, true);
+                bottom = data.getFloat64(9, true);
+                right = data.getFloat64(17, true);
+                top = data.getFloat64(25, true);
+                px = (right + left) / 2;
+                py = (top + bottom) / 2;
+                ratio1 = 1;
                 if (myPoints.length == 0) {
                     px = (right + left) / 2;
                     py = (top + bottom) / 2;
+                    ratio = ratio1;
                 }
         }
     }
@@ -342,6 +368,7 @@ jQuery('#playBtn').click(function() {
             pointColor = "#" + pointColor;
             var pointName = d.getUint8(offset++);
             var pointIsVirus = !!(pointName & 1);
+            var pointIsAgitated = !!(pointName & 16);
             if (pointName & 2) {
                 offset += 4;
             }
@@ -361,8 +388,6 @@ jQuery('#playBtn').click(function() {
                 pointName += String.fromCharCode(data);
             }
             data = null;
-
-            data = null;
             if (nodes.hasOwnProperty(id)) {
                 data = nodes[id];
                 data.updatePos();
@@ -371,10 +396,12 @@ jQuery('#playBtn').click(function() {
                 data.oSize = data.size;
                 data.color = pointColor;
             } else {
-                data = new Points(id, pointX, pointY, pointSize, pointColor, pointIsVirus, pointName);
+                data = new Points(id, pointX, pointY, pointSize, pointColor, pointName);
                 data.pX = pointX;
                 data.pY = pointY;
             }
+            data.isVirus = pointIsVirus;
+            data.isAgitated = pointIsAgitated;
             data.nx = pointX;
             data.ny = pointY;
             data.nSize = pointSize;
@@ -483,16 +510,16 @@ jQuery('#playBtn').click(function() {
                     minMass = myPoints[i].size;
                 }
             }
-            score = Math.pow(Math.min(64 / score, 1), 0.4) * Math.max(height / 965, width / 1920);
+            score = Math.pow(Math.min(64 / score, 1), 0.4) * Math.max(height / 1080, width / 1920);
             ratio = (9 * ratio + score) / screenRenderSize ;
         }
     }
     function draw() {
         var tick = +new Date;
         Ba++;
-        build();
         timestamp = +new Date;
         if (0 < myPoints.length) {
+            build();
             var w = 0;
             var d = 0;
             var i = 0;
@@ -501,8 +528,15 @@ jQuery('#playBtn').click(function() {
                 w += myPoints[i].x / myPoints.length;
                 d += myPoints[i].y / myPoints.length;
             }
+            px = w;
+            py = d;
+            ratio1 = ratio;
             px = (px + w) / 2;
             py = (py + d) / 2;
+        } else {
+            px = (29 * px + px) / 30;
+            py = (29 * py + py) / 30;
+            ratio = (9 * ratio + ratio) / 10;
         }
         processData();
         reset();
@@ -570,7 +604,7 @@ jQuery('#playBtn').click(function() {
             if (null == button2) {
                 button2 = new SVGPlotFunction(24, "#FFFFFF");
             }
-            button2.setValue("Server: " + ws.url);
+            button2.setValue("Server "+gameMode.substr(1)+": " + ws.url);
             d = button2.render();
             w = d.width;
             ctx.globalAlpha = 0.4;
@@ -610,45 +644,61 @@ jQuery('#playBtn').click(function() {
         return value;
     }
     function redraw() {
-        if (0 != elements.length) {
-            if (nickName) {
+        img = null;
+        img = null;
+        if (null != angles || 0 != elements.length) {
+            if (null != angles || nickName) {
                 img = document.createElement("canvas");
-
                 var ctx = img.getContext("2d");
-                var s = 60 + 24 * elements.length;
+                var i = 60;
+                i = null == angles ? i + 24 * elements.length : i + 180;
                 var n = Math.min(200, 0.3 * width) / 200;
-
                 img.width = 200 * n;
-                img.height = s * n;
+                img.height = i * n;
                 ctx.scale(n, n);
                 ctx.globalAlpha = 0.4;
                 ctx.fillStyle = "#000000";
-                ctx.fillRect(0, 0, 200, s);
+                ctx.fillRect(0, 0, 200, i);
                 ctx.globalAlpha = 1;
                 ctx.fillStyle = "#FFFFFF";
-                ctx.font = "20px Ubuntu";
-                n = "Ratio: "+Math.round(ratio*10000)/10000;
-                ctx.fillText(n, 100 - ctx.measureText(n).width / 2, 30);
-
-                for (var i = 0;i < elements.length;++i) {
-                    n = elements[i].name || "An unnamed cell";
-                    if (-1 != myPoints.indexOf(elements[i].id)) {
-                        n = myPoints[0].name;
-                    }
-                    if (!nickName) {
-                        if (!(0 != myPoints.length && myPoints[0].name == n)) {
+                n = "Leaderboard";
+                ctx.font = "30px Ubuntu";
+                ctx.fillText(n, 100 - ctx.measureText(n).width / 2, 40);
+                if (null == angles) {
+                    ctx.font = "20px Ubuntu";
+                    i = 0;
+                    for (;i < elements.length;++i) {
+                        n = elements[i].name || "An unnamed cell";
+                        if (!nickName) {
                             n = "An unnamed cell";
                         }
+                        if (-1 != bucket.indexOf(elements[i].id)) {
+                            if (myPoints[0].name) {
+                                n = myPoints[0].name;
+                            }
+                            ctx.fillStyle = "#FFAAAA";
+                        } else {
+                            ctx.fillStyle = "#FFFFFF";
+                        }
+                        n = i + 1 + ". " + n;
+                        ctx.fillText(n, 100 - ctx.measureText(n).width / 2, 70 + 24 * i);
                     }
-                    n = i + 1 + ". " + n;
-                    ctx.fillText(n, 100 - ctx.measureText(n).width / 2, 70 + 24 * i);
+                } else {
+                    i = n = 0;
+                    for (;i < angles.length;++i) {
+                        var angEnd = n + angles[i] * Math.PI * 2;
+                        ctx.fillStyle = cs[i + 1];
+                        ctx.beginPath();
+                        ctx.moveTo(100, 140);
+                        ctx.arc(100, 140, 80, n, angEnd, false);
+                        ctx.fill();
+                        n = angEnd;
+                    }
                 }
-            } else {
-                img = null;
             }
         }
     }
-    function Points(id, x, y, size, color, isVirus, name) {
+    function Points(id, x, y, size, color, name) {
         items.push(this);
         nodes[id] = this;
         this.id = id;
@@ -656,7 +706,6 @@ jQuery('#playBtn').click(function() {
         this.oy = this.y = y;
         this.oSize = this.size = size;
         this.color = color;
-        this.isVirus = isVirus;
         this.points = [];
         this.pointsAcc = [];
         this.createPoints();
@@ -712,6 +761,7 @@ jQuery('#playBtn').click(function() {
         var right = 1E4;
         var top = 1E4;
         var ratio = 1;
+        var ratio1 = 1;
         var screenRenderSize = 10;
         var dest = null;
         var showSkins = true;
@@ -721,6 +771,9 @@ jQuery('#playBtn').click(function() {
         var isTypesHack = false;
         var aa = false;
         var closingAnimationTime = 0;
+
+        var angles = null;
+        var css = ["#333333", "#FF3333", "#33FF33", "#3333FF"];
         var darkTheme = false;
         var isShowMass = false;
         var options = "ontouchstart" in window_ && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -785,7 +838,7 @@ jQuery('#playBtn').click(function() {
         var button = null;
         var button2 = null;
         var sources = {};
-        var excludes = "poland;usa;china;russia;canada;australia;spain;brazil;germany;ukraine;france;sweden;hitler;north korea;south korea;japan;united kingdom;earth;greece;latvia;lithuania;estonia;finland;norway;cia;maldivas;austria;nigeria;reddit;yaranaika;confederate;9gag;indiana;4chan;italy;ussr;pewdiepie;bulgaria;tumblr;2ch.hk;hong kong;portugal;jamaica;german empire;mexico;sanik;switzerland;croatia;chile;indonesia;bangladesh;thailand;iran;iraq;peru;moon;botswana;bosnia;netherlands;european union;taiwan;pakistan;hungary;satanist;qing dynasty;nazi;matriarchy;patriarchy;feminism;ireland;texas;facepunch;prodota;cambodia;steam;piccolo;ea;india;kc;denmark;quebec;ayy lmao;sealand;bait;tsarist russia;origin;vinesauce;stalin;belgium;luxembourg;stussy;prussia;8ch;argentina;scotland;sir;romania;belarus;wojak;isis;doge".split(";");
+        var excludes = "poland;usa;china;russia;canada;australia;spain;brazil;germany;ukraine;france;sweden;hitler;north korea;south korea;japan;united kingdom;earth;greece;latvia;lithuania;estonia;finland;norway;cia;maldivas;austria;nigeria;reddit;yaranaika;confederate;9gag;indiana;4chan;italy;ussr;bulgaria;tumblr;2ch.hk;hong kong;portugal;jamaica;german empire;mexico;sanik;switzerland;croatia;chile;indonesia;bangladesh;thailand;iran;iraq;peru;moon;botswana;bosnia;netherlands;european union;taiwan;pakistan;hungary;satanist;qing dynasty;matriarchy;patriarchy;feminism;ireland;texas;facepunch;prodota;cambodia;steam;piccolo;ea;india;kc;denmark;quebec;ayy lmao;sealand;bait;tsarist russia;origin;vinesauce;stalin;belgium;luxembourg;stussy;prussia;8ch;argentina;scotland;sir;romania;belarus;wojak;doge;nasa;byzantium;imperial japan;french kingdom;somalia;turkey;mars;pokerface;8".split(";");
         var names = ["m'blob"];
         Points.prototype = {
             id : 0,
@@ -808,6 +861,8 @@ jQuery('#playBtn').click(function() {
             drawTime : 0,
             destroyed : false,
             isVirus : false,
+            isAgitated : false,
+            wasSimpleDrawing : true,
             destroy : function() {
                 var i;
                 i = 0;
@@ -874,20 +929,25 @@ jQuery('#playBtn').click(function() {
                 }
             },
             getNumPoints : function() {
-                return~~Math.max(this.size * ratio * (this.isVirus ? Math.min(2 * n_players, 1) : n_players), this.isVirus ? 10 : 5);
+                var rh = 10;
+                if (20 > this.size) {
+                    rh = 5;
+                }
+                if (this.isVirus) {
+                    rh = 30;
+                }
+                return~~Math.max(this.size * ratio * (this.isVirus ? Math.min(2 * n_players, 1) : n_players), rh);
             },
             movePoints : function() {
                 this.createPoints();
                 var points = this.points;
                 var chars = this.pointsAcc;
-                var value = chars.concat();
-                var rows = points.concat();
-                var l = rows.length;
+                var l = points.length;
                 var i = 0;
                 for (;i < l;++i) {
-                    var y = value[(i - 1 + l) % l];
-                    var v = value[(i + 1) % l];
-                    chars[i] += Math.random() - 0.5;
+                    var y = chars[(i - 1 + l) % l];
+                    var v = chars[(i + 1) % l];
+                    chars[i] += (Math.random() - 0.5) * (this.isAgitated ? 3 : 1);
                     chars[i] *= 0.7;
                     if (10 < chars[i]) {
                         chars[i] = 10;
@@ -897,17 +957,17 @@ jQuery('#playBtn').click(function() {
                     }
                     chars[i] = (y + v + 8 * chars[i]) / 10;
                 }
-                var flipped = this;
+                var self = this;
                 for (i = 0;i < l;++i) {
-                    value = rows[i].v;
-                    y = rows[(i - 1 + l) % l].v;
-                    v = rows[(i + 1) % l].v;
+                    var value = points[i].v;
+                    y = points[(i - 1 + l) % l].v;
+                    v = points[(i + 1) % l].v;
                     if (15 < this.size) {
                         var m = false;
                         var startX = points[i].x;
                         var startY = points[i].y;
                         context.retrieve2(startX - 5, startY - 5, 10, 10, function(vars) {
-                            if (vars.c != flipped) {
+                            if (vars.c != self) {
                                 if (25 > (startX - vars.x) * (startX - vars.x) + (startY - vars.y) * (startY - vars.y)) {
                                     m = true;
                                 }
@@ -929,7 +989,11 @@ jQuery('#playBtn').click(function() {
                     if (value < 0) {
                         value = 0;
                     }
-                    value = (12 * value + this.size) / 13;
+                    if(this.isAgitated){
+                        value = (19 * value + this.size) / 20;
+                    }else{
+                        value = (12 * value + this.size) / 13
+                    }
                     points[i].v = (y + v + 8 * value) / 10;
                     y = 2 * Math.PI / l;
                     v = this.points[i].v;
@@ -957,83 +1021,94 @@ jQuery('#playBtn').click(function() {
                 this.x = A * (this.nx - this.ox) + this.ox;
                 this.y = A * (this.ny - this.oy) + this.oy;
                 this.size = A * (this.nSize - this.oSize) + this.oSize;
-                if (!this.destroyed) {
-                    if (!(getNameSize == this.getNameSize())) {
-                        this.setName(this.name);
-                    }
-                }
                 return A;
             },
             shouldRender : function() {
-                return true;
-                if(this.x + this.size + 40 < px - width / 2 / ratio ||
-                    (
-                        this.y + this.size + 40 < py - height / 2 / ratio ||
-                        (this.x - this.size - 40 > px + width / 2 / ratio || this.y - this.size - 40 > py + height / 2 / ratio))){
+                if(this.x + this.size + 40 < px - width / 2 / ratio)
                     return false;
-                }
+                if(this.y + this.size + 40 < py - height / 2 / ratio)
+                    return false;
+                if(this.x - this.size - 40 > px + width / 2 / ratio)
+                    return false;
+                if(this.y - this.size - 40 > py + height / 2 / ratio)
+                    return false;
                 return true;
             },
             draw : function() {
                 if (this.shouldRender()) {
+                    var y_position = !this.isVirus && (!this.isAgitated && 0.5 > ratio);
+                    if (this.wasSimpleDrawing && !y_position) {
+                        for (var j = 0;j < this.points.length;j++) {
+                            this.points[j].v = this.size;
+                        }
+                    }
+                    this.wasSimpleDrawing = y_position;
                     ctx.save();
                     this.drawTime = timestamp;
                     var key = this.updatePos();
                     if (this.destroyed) {
                         ctx.globalAlpha *= 1 - key;
                     }
+                    ctx.lineWidth = 10;
+                    ctx.lineCap = "round";
+                    ctx.lineJoin = this.isVirus ? "mitter" : "round";
+
                     this.movePoints();
                     if (isColors) {
                         ctx.fillStyle = "#FFFFFF";
                         ctx.strokeStyle = "#AAAAAA";
                     } else {
-                        if(myPoints.indexOf(this) != -1){
-                            this.color = '#E2FF07';
-                        }else if(isTypesHack && !this.isVirus && this.size > 14){
-                            if (this.size * 0.9 > minMass) {
-                                this.color = '#FF3107';
-                            } else if (this.size < (minMass / 1.414213562) * 0.9) {
-                                this.color = '#57FF07';
-                            } else if (this.size < minMass * 0.9) {
-                                this.color = '#07FFB0';
-                            } else {
-                                this.color = '#4106FF';
+                        if(isTypesHack) {
+                            if (myPoints.indexOf(this) != -1) {
+                                this.color = '#E2FF07';
+                            } else if (!this.isVirus && this.size > 14) {
+                                if (this.size * 0.9 > minMass) {
+                                    this.color = '#FF3107';
+                                } else if (this.size < (minMass / 1.414213562) * 0.9) {
+                                    this.color = '#57FF07';
+                                } else if (this.size < minMass * 0.9) {
+                                    this.color = '#07FFB0';
+                                } else {
+                                    this.color = '#4106FF';
+                                }
                             }
                         }
-
                         ctx.fillStyle = this.color;
                         ctx.strokeStyle = this.color;
-
-                    }
-                    ctx.beginPath();
-                    ctx.lineWidth = 10;
-                    ctx.lineCap = "round";
-                    ctx.lineJoin = this.isVirus ? "mitter" : "round";
-                    key = this.getNumPoints();
-                    ctx.moveTo(this.points[0].x, this.points[0].y);
-                    var a = false;
-                    for (var src = 1;src <= key;src++) {
-                        var i = src % key;
-                        ctx.lineTo(this.points[i].x, this.points[i].y);
                     }
 
+                    if (y_position) {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI, false);
+                    } else {
+                        this.movePoints();
+                        ctx.beginPath();
+                        key = this.getNumPoints();
+                        ctx.moveTo(this.points[0].x, this.points[0].y);
+                        var a = false;
+                        for (var src = 1;src <= key;src++) {
+                            var i = src % key;
+                            ctx.lineTo(this.points[i].x, this.points[i].y);
+                        }
+                    }
                     ctx.closePath();
                     key = this.name.toLowerCase();
-                    if (showSkins && gameMode == "") {
-                        if (-1 != excludes.indexOf(key)) {
+                    src = null;
+                    if (!this.isAgitated && showSkins && gameMode == "") {
+                        if (excludes.indexOf(key) != -1) {
                             if (!sources.hasOwnProperty(key)) {
                                 sources[key] = new Image;
                                 sources[key].src = "http://agar.io/skins/" + key + ".png";
                             }
-                            src = sources[key];
-                        } else {
-                            src = null;
+                            if(sources[key].width != 0 && sources[key].complete) {
+                                src = sources[key];
+                            }
                         }
-                    } else {
-                        src = null;
                     }
                     key = src ? -1 != names.indexOf(key) : false;
-                    ctx.stroke();
+                    if (!y_position) {
+                        ctx.stroke();
+                    }
                     ctx.fill();
 
 
@@ -1106,6 +1181,7 @@ jQuery('#playBtn').click(function() {
             _canvas : null,
             _ctx : null,
             _dirty : false,
+            _scale : 1,
             setSize : function(size) {
                 if (this._size != size) {
                     this._size = size;
@@ -1142,18 +1218,19 @@ jQuery('#playBtn').click(function() {
                     this._ctx = this._canvas.getContext("2d");
                 }
                 if (this._dirty) {
-                    var style = this._canvas;
+                    var canvas = this._canvas;
                     var ctx = this._ctx;
                     var mass = this._value;
-
+                    var scale = this._scale;
                     var fontSize = this._size;
                     var font = fontSize + "px Ubuntu";
                     ctx.font = font;
                     var parentWidth = ctx.measureText(mass).width;
                     var PX = ~~(0.2 * fontSize);
-                    style.width = parentWidth + 6;
-                    style.height = fontSize + PX;
+                    canvas.width = (parentWidth + 6) * scale;
+                    canvas.height = (fontSize + PX) * scale;
                     ctx.font = font;
+                    ctx.scale(scale, scale);
                     ctx.globalAlpha = 1;
                     ctx.lineWidth = 3;
                     ctx.strokeStyle = this._strokeColor;
