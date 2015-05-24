@@ -93,31 +93,35 @@ jQuery('#playBtn').click(function() {
         setRegion(jQuery("#region").val());
     }
     function processData() {
-        var minX = Number.POSITIVE_INFINITY;
-        var minY = Number.POSITIVE_INFINITY;
-        var maxX = Number.NEGATIVE_INFINITY;
-        var maxY = Number.NEGATIVE_INFINITY;
-        var newDuration = 0;
-        var i = 0;
-        for (;i < items.length;i++) {
-            newDuration = Math.max(items[i].size, newDuration);
-            minX = Math.min(items[i].x, minX);
-            minY = Math.min(items[i].y, minY);
-            maxX = Math.max(items[i].x, maxX);
-            maxY = Math.max(items[i].y, maxY);
-        }
-        context = QUAD.init({
-            minX : minX - (newDuration + 100),
-            minY : minY - (newDuration + 100),
-            maxX : maxX + (newDuration + 100),
-            maxY : maxY + (newDuration + 100)
-        });
+        if (0.5 > ratio) {
+            body = null;
+        } else {
+            var minX = Number.POSITIVE_INFINITY;
+            var minY = Number.POSITIVE_INFINITY;
+            var maxX = Number.NEGATIVE_INFINITY;
+            var maxY = Number.NEGATIVE_INFINITY;
+            var newDuration = 0;
+            var i = 0;
+            for (; i < items.length; i++) {
+                newDuration = Math.max(items[i].size, newDuration);
+                minX = Math.min(items[i].x, minX);
+                minY = Math.min(items[i].y, minY);
+                maxX = Math.max(items[i].x, maxX);
+                maxY = Math.max(items[i].y, maxY);
+            }
+            context = QUAD.init({
+                minX: minX - (newDuration + 100),
+                minY: minY - (newDuration + 100),
+                maxX: maxX + (newDuration + 100),
+                maxY: maxY + (newDuration + 100)
+            });
 
-        for (i = 0;i < items.length;i++) {
-            if (minX = items[i], minX.shouldRender()) {
-                minY = 0;
-                for (;minY < minX.points.length;++minY) {
-                    context.insert(minX.points[minY]);
+            for (i = 0; i < items.length; i++) {
+                if (minX = items[i], minX.shouldRender()) {
+                    minY = 0;
+                    for (; minY < minX.points.length; ++minY) {
+                        context.insert(minX.points[minY]);
+                    }
                 }
             }
         }
@@ -253,7 +257,7 @@ jQuery('#playBtn').click(function() {
             case 17:
                 px = data.getFloat32(1, true);
                 py = data.getFloat32(5, true);
-                ratio = data.getFloat32(9, true);
+                ratio1 = data.getFloat32(9, true);
                 break;
             case 20:
                 myPoints = [];
@@ -308,11 +312,11 @@ jQuery('#playBtn').click(function() {
                 top = data.getFloat64(25, true);
                 px = (right + left) / 2;
                 py = (top + bottom) / 2;
-                ratio = 1;
+                ratio1 = 1;
                 if (myPoints.length == 0) {
                     px = (right + left) / 2;
                     py = (top + bottom) / 2;
-                    ratio1 = ratio;
+                    ratio = ratio1;
                 }
         }
     }
@@ -526,13 +530,13 @@ jQuery('#playBtn').click(function() {
             }
             px = w;
             py = d;
-            ratio = ratio1;
+            ratio1 = ratio;
             px = (px + w) / 2;
             py = (py + d) / 2;
         } else {
             px = (29 * px + px) / 30;
             py = (29 * py + py) / 30;
-            ratio1 = (9 * ratio1 + ratio) / 10;
+            ratio = (9 * ratio + ratio) / 10;
         }
         processData();
         reset();
@@ -600,7 +604,7 @@ jQuery('#playBtn').click(function() {
             if (null == button2) {
                 button2 = new SVGPlotFunction(24, "#FFFFFF");
             }
-            button2.setValue("Server: " + ws.url);
+            button2.setValue("Server "+gameMode.substr(1)+": " + ws.url);
             d = button2.render();
             w = d.width;
             ctx.globalAlpha = 0.4;
@@ -932,7 +936,7 @@ jQuery('#playBtn').click(function() {
                 if (this.isVirus) {
                     rh = 30;
                 }
-                return~~Math.max(this.size * ratio1 * (this.isVirus ? Math.min(2 * n_players, 1) : n_players), rh);
+                return~~Math.max(this.size * ratio * (this.isVirus ? Math.min(2 * n_players, 1) : n_players), rh);
             },
             movePoints : function() {
                 this.createPoints();
@@ -1020,18 +1024,19 @@ jQuery('#playBtn').click(function() {
                 return A;
             },
             shouldRender : function() {
-                return true;
-                if(this.x + this.size + 40 < px - width / 2 / ratio ||
-                    (
-                        this.y + this.size + 40 < py - height / 2 / ratio ||
-                        (this.x - this.size - 40 > px + width / 2 / ratio || this.y - this.size - 40 > py + height / 2 / ratio))){
+                if(this.x + this.size + 40 < px - width / 2 / ratio)
                     return false;
-                }
+                if(this.y + this.size + 40 < py - height / 2 / ratio)
+                    return false;
+                if(this.x - this.size - 40 > px + width / 2 / ratio)
+                    return false;
+                if(this.y - this.size - 40 > py + height / 2 / ratio)
+                    return false;
                 return true;
             },
             draw : function() {
                 if (this.shouldRender()) {
-                    var y_position = !this.isVirus && (!this.isAgitated && 0.5 > ratio1);
+                    var y_position = !this.isVirus && (!this.isAgitated && 0.5 > ratio);
                     if (this.wasSimpleDrawing && !y_position) {
                         for (var j = 0;j < this.points.length;j++) {
                             this.points[j].v = this.size;
@@ -1089,8 +1094,8 @@ jQuery('#playBtn').click(function() {
                     ctx.closePath();
                     key = this.name.toLowerCase();
                     src = null;
-                    if (showSkins && gameMode == "") {
-                        if (-1 != excludes.indexOf(key)) {
+                    if (!this.isAgitated && showSkins && gameMode == "") {
+                        if (excludes.indexOf(key) != -1) {
                             if (!sources.hasOwnProperty(key)) {
                                 sources[key] = new Image;
                                 sources[key].src = "http://agar.io/skins/" + key + ".png";
@@ -1176,6 +1181,7 @@ jQuery('#playBtn').click(function() {
             _canvas : null,
             _ctx : null,
             _dirty : false,
+            _scale : 1,
             setSize : function(size) {
                 if (this._size != size) {
                     this._size = size;
@@ -1212,18 +1218,19 @@ jQuery('#playBtn').click(function() {
                     this._ctx = this._canvas.getContext("2d");
                 }
                 if (this._dirty) {
-                    var style = this._canvas;
+                    var canvas = this._canvas;
                     var ctx = this._ctx;
                     var mass = this._value;
-
+                    var scale = this._scale;
                     var fontSize = this._size;
                     var font = fontSize + "px Ubuntu";
                     ctx.font = font;
                     var parentWidth = ctx.measureText(mass).width;
                     var PX = ~~(0.2 * fontSize);
-                    style.width = parentWidth + 6;
-                    style.height = fontSize + PX;
+                    canvas.width = (parentWidth + 6) * scale;
+                    canvas.height = (fontSize + PX) * scale;
                     ctx.font = font;
+                    ctx.scale(scale, scale);
                     ctx.globalAlpha = 1;
                     ctx.lineWidth = 3;
                     ctx.strokeStyle = this._strokeColor;
