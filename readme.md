@@ -27,7 +27,7 @@ Copy files to your server and open http://localhost/index.html
 #### Data sended ####
 
  * send 5B (1B=255 + 4B=1) when opened connection
- * send name: 0(1B) + characters ascii(16B each, to support other languages)
+ * send name: 0(1B) + characters ascii(2B each, to support other languages)
  * send actions: 1B number(command)
 	- 1 : spectate
  	- 17: space key (split)
