@@ -20,13 +20,13 @@ jQuery('#playBtn').click(function() {
                 var z0 = e.clientX - (5 + width / 5 / 2);
                 var z1 = e.clientY - (5 + width / 5 / 2);
                 if (Math.sqrt(z0 * z0 + z1 * z1) <= width / 5 / 2) {
-                    f();
+                    sendMousePosition();
                     emit(17);
                     return;
                 }
             }
             reset();
-            f();
+            sendMousePosition();
         };
         canvas.onmousemove = function(e) {
             mouseX = e.clientX;
@@ -41,7 +41,7 @@ jQuery('#playBtn').click(function() {
         window_.onkeydown = function(e) {
             if (!(32 != e.keyCode)) { // space
                 if (!keySpace) {
-                    f();
+                    sendMousePosition();
                     emit(17);
                     keySpace = true;
                 }
@@ -54,7 +54,7 @@ jQuery('#playBtn').click(function() {
             }
             if (!(87 != e.keyCode)) { // w
                 if (!keyW) {
-                    f();
+                    sendMousePosition();
                     emit(21);
                     keyW = true;
                 }
@@ -444,7 +444,8 @@ jQuery('#playBtn').click(function() {
         return ws != null && ws.readyState == ws.OPEN;
     }
 
-    function f() {
+    // leave the "var f" here otherwise it will not works
+    var f = function sendMousePosition() {
         if (isConnect()) {
             var z0 = mouseX - width / 2;
             var z1 = mouseY - height / 2;
