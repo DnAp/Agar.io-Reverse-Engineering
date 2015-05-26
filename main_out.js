@@ -89,7 +89,7 @@ jQuery('#playBtn').click(function() {
         } else {
             setInterval(draw, 1E3 / 60);
         }
-        setInterval(f, 100);
+        setInterval(sendMousePosition, 100);
         setRegion(jQuery("#region").val());
     }
     function processData() {
@@ -444,8 +444,7 @@ jQuery('#playBtn').click(function() {
         return ws != null && ws.readyState == ws.OPEN;
     }
 
-    // leave the "var f" here otherwise it will not works
-    var f = function sendMousePosition() {
+    function sendMousePosition() {
         if (isConnect()) {
             var z0 = mouseX - width / 2;
             var z1 = mouseY - height / 2;
