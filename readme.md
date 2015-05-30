@@ -49,8 +49,8 @@ Copy files to your server and open http://localhost/index.html
 	- this message never came
  * 20: resets points.
 	- this message never came
- * 32: creates new bucket
-	- probably your own id for bucket. called for first time only when started
+ * 32: informs the client which cell belongs to the player.
+	- sent every time you split or respawn.
  * 48: elements with name.
 	- probably old leaderboard method.  also doesnt come here
  * 49: leaderboard
