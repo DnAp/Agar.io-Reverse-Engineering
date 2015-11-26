@@ -1,6 +1,9 @@
 Agar.io Reverse Engineering
 ========
 
+## Support discontinued, it is not working now ##
+
+
 **Author:**
  * DnAp
  * TheZero
